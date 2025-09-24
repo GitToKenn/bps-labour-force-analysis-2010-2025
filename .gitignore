@@ -1,0 +1,16 @@
+# Ignore only RAW data files
+data/raw/*.xls
+data/raw/*.csv
+data/raw/*.zip
+data/raw/*.7z
+notebook/.ipynb_checkpoints/
+
+# Ignore media used for LinkedIn post exports
+linkedin_media/
+
+# Ignore temporary files
+*.twbr
+
+#ignore unfinished dasboard files
+*.twb
+
