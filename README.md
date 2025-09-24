@@ -3,40 +3,44 @@
 This project is inspired by a Tableau course exercise on **unemployment time-series visualisation**, adapted to the Indonesian context.  
 Instead of using U.S. Bureau of Labor Statistics data, here we process and visualise the **Badan Pusat Statistik (BPS) Labour Force August releases** from **2010–2024**.  
 
-The goal is to create a structured, reproducible pipeline that cleans BPS raw CSVs and prepares them for **time-series analysis and visualisation**. With the cleaned data, we can replicate charts such as:
+The goal is to create a structured, reproducible pipeline that cleans BPS raw CSVs and prepares them for **time-series analysis and visualisation**. With the cleaned data, we can replicate and extend charts such as:
 
 - 📈 Unemployment trends by **age group**  
-- ⚖️ Gender disparities in unemployment  
 - 🔎 Focused view on **25–34 year olds**, often most sensitive to labour market shocks  
-- 📉 Time-series highlighting major events (e.g., Global Financial Crisis 2008, COVID-19 impact)  
+- 📉 Time-series highlighting major events (e.g., COVID-19 impact, post-pandemic recovery)  
 
-🛠️ **Status**: cleaning completed, visualisation in progress  
-🔒 **Repo**: Private  
+🛠️ **Status**: cleaning labour force data & rates; Tableau visualisation in progress  
+🔒 **Repo**: Public 
 
 ---
 
 ## 📌 Project Goals
 
-- **Reproduce a Tableau-style unemployment time series by age group** using Indonesian BPS data  
-- Build a **data cleaning pipeline** to handle BPS CSV quirks: header rows, unnamed columns, totals  
+- **Reproduce Tableau-style time series** of labour force participation and unemployment using BPS data (2010–2025)  
+- Build a **reliable cleaning pipeline** for BPS CSV quirks: header rows, unnamed columns, totals  
 - Standardise column names and convert values to numeric for time-series analysis  
-- Split into **detail datasets** (age group breakdowns) and **total datasets** (aggregated)  
-- Export cleaned tables for further use in **Python, R, or Tableau**  
-- Enable visualisation of **unemployment trends by age** across 2010–2024  
+- Produce **clean datasets**:  
+  - Population 15+ (TP)  
+  - Labour Force (LF: employed, unemployed, total)  
+- Derive key metrics: **LFPR, Unemployment Rate (TPT), Employment-to-Population Ratio (EPR)**  
+- Export cleaned tables for reuse in **Python, R, or Tableau**  
+- Create Tableau dashboards for **age-group trends** and **event-driven patterns** (e.g., COVID-19 impact)  
+
 ---
 
-## 🗂️ Project Structure
+## 📂 Project Structure
 
-- [README.md](README.md) – Project overview and documentation  
-- [notebooks/](notebooks/) – Jupyter Notebooks for cleaning & transformation  
-  - `01_data_cleaning.ipynb` – Loop-based cleaning (2010–2024)  
-  - `02_total_extraction.ipynb` – Extraction of yearly totals  
-- [Data/](Data/) – Datasets  
-  - `Raw/` – Original BPS CSVs (excluded from repo)  
-  - `Cleaned/` – Timestamped cleaned exports  
-    - `bps_all_detail_2010_2024_<timestamp>.csv`  
-    - `bps_total_detail_2010_2024_<timestamp>.csv`  
-- [.gitignore](.gitignore) – Ensures raw data and large files are not committed  
+- [README.md](README.md) – Project overview
+- [notebooks/](notebooks/) – Jupyter notebooks  
+  - `01_data_cleaning_tp.ipynb` – Clean TP dataset  
+  - `02_data_cleaning_lf.ipynb` – Clean LF dataset  
+- [data/](data/) – Datasets  
+  - `raw/` – Original BPS files (ignored)  
+  - `clean/` – Cleaned outputs  
+    - `tp_cleaned.xlsx` – Population 15+  
+    - `lf_cleaned.xlsx` – Labour force  
+- [dashboard/](dashboard/) – Tableau (ignored until final)
+- [.gitignore](.gitignore) – Ignore raw + temp files
 
 
 --- 
@@ -47,14 +51,17 @@ The goal is to create a structured, reproducible pipeline that cleans BPS raw CS
 root/
 ├── README.md
 ├── .gitignore
-├── Data/
-│ ├── Raw/ (excluded)
-│ └── Cleaned/
-│ ├── bps_all_detail_2010_2024_<timestamp>.csv
-│ └── bps_total_detail_2010_2024_<timestamp>.csv
+├── data/
+│   ├── raw/        (excluded)
+│   └── clean/
+│       ├── tp_cleaned.xlsx
+│       └── lf_cleaned.xlsx
 ├── notebooks/
-│ ├── 01_data_cleaning.ipynb
-│ └── 02_total_extraction.ipynb
+│   ├── 01_data_cleaning_tp.ipynb
+│   ├── 02_data_cleaning_lf.ipynb
+│   └── 03_metrics.ipynb   (planned)
+└── dashboard/
+    └── lfpr_unemployment_experiment.twb (ignored until final)
 ```
 ---
 
@@ -64,7 +71,7 @@ root/
 ## 📊 Dataset Overview
 
 - Source: Badan Pusat Statistik (BPS) – Labour Force August releases  
-- Coverage: **2010–2024**  
+- Coverage: **2010–2025** (based on data available from BPS up to **February 2025**)  
 - Observations: population aged 15+ segmented by age groups  
 - Format: CSV, annual (August release)  
 
@@ -72,30 +79,42 @@ root/
 
 ## 🧹 Cleaning & Processing Summary
 
-- Dropped **top 3 header rows** in each CSV  
-- Dropped redundant `"Unnamed: 3"` column  
-- Renamed:  
-  - `"Unnamed: 1"` → `February`  
-  - `"Unnamed: 2"` → `August`  
-  - `"year"` → `Year`  
-- Converted `February` and `August` to numeric (`Int64`), stripped symbols/commas  
-- Computed `Yearly_sum = February + August`  
-- Split rows into:  
-  - **Detail**: all age groups except `"Total"`  
-  - **Total**: `"Total"` only (one row per year)  
-- Concatenated buckets into two master DataFrames → exported as CSV  
+- **Removed top 3 header rows** in each CSV  
+- **Dropped unused columns** (e.g., `"Unnamed: 3"`)  
+- **Standardised column names**:  
+  - `Unnamed: 1` → `February`  
+  - `Unnamed: 2` → `August`  
+  - `year` → `Year`  
+  - `Age group` → `Age Group`  
+- **Cleaned numeric fields**: removed dots/commas, converted to `Int64`  
+- **Handled missing values**: August values set to `NaN` where unavailable  
+- **Split datasets**:  
+  - **Detail** → all age groups except `"Total"`  
+  - **Total** → yearly `"Total"` rows only  
+- **Concatenated yearly files** into two master DataFrames (`detail` & `total`)  
+- **Exported** final datasets as timestamped CSVs  
 
 ---
 
 ## ✨ Outputs
 
-- ✅ `bps_all_detail_2010_2024_<timestamp>.csv`  
-  - Age group breakdowns (no “Total”)  
-  - Columns: `Age Group, February, August, Year, Yearly_sum`  
+Two categories of cleaned datasets are produced:
 
-- ✅ `bps_total_detail_2010_2024_<timestamp>.csv`  
-  - Yearly totals only  
-  - Columns: `Year, February, August`  
+- **Labour Force (lf)**  
+  - ✅ `bps_lf_detail_2010_2025_<timestamp>.csv`  
+    - Age group breakdowns (no “Total”)  
+    - Columns: `Age Group, February, August, Year`  
+  - ✅ `bps_lf_total_2010_2025_<timestamp>.csv`  
+    - Yearly totals only  
+    - Columns: `Year, February, August`  
+
+- **Total Population (tp)**  
+  - ✅ `bps_tp_detail_2010_2025_<timestamp>.csv`  
+    - Age group breakdowns (no “Total”)  
+    - Columns: `Age Group, February, August, Year`  
+  - ✅ `bps_tp_total_2010_2025_<timestamp>.csv`  
+    - Yearly totals only  
+    - Columns: `Year, February, August`  
 
 ---
 
@@ -104,3 +123,6 @@ root/
 - This project uses **publicly available BPS data** from official August Labour Force releases.  
 - Original raw CSVs are excluded from the repository due to licensing and storage.  
 - Cleaning procedures (dropping rows, renaming, numeric conversion) are documented in notebooks.  
+- Official source links:  
+  - [Labor Force (LF) by Age Group, 2025](https://www.bps.go.id/en/statistics-table/2/Njk4IzI=/labor-force--lf--by-age-group.html)  
+  - [Total Population of Age 15 and above by Age Group, 2025](https://www.bps.go.id/en/statistics-table/2/NzE1IzI=/total-population-of-age-15-and-above-by-age-group.html)   
