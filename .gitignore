@@ -14,3 +14,5 @@ linkedin_media/
 #ignore unfinished dasboard files
 *.twb
 
+#ignore personal notes
+WORKLOG.md
