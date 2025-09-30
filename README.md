@@ -9,7 +9,7 @@ The goal is to create a structured, reproducible pipeline that cleans BPS raw CS
 - 🔎 Focused view on **25–34 year olds**, often most sensitive to labour market shocks  
 - 📉 Time-series highlighting major events (e.g., COVID-19 impact, post-pandemic recovery)  
 
-🛠️ **Status**: cleaning labour force data & rates; Tableau visualisation in progress  
+🛠️ **Status**: combined labour force variables (Work, Unemp, Total, Emp Rate) into unified dataset; preparing Tableau dashboard for visualisation
 🔒 **Repo**: Public 
 
 ---
@@ -30,17 +30,28 @@ The goal is to create a structured, reproducible pipeline that cleans BPS raw CS
 
 ## 📂 Project Structure
 
-- [README.md](README.md) – Project overview
+- [README.md](README.md) – Project overview  
 - [notebooks/](notebooks/) – Jupyter notebooks  
   - `01_data_cleaning_tp.ipynb` – Clean TP dataset  
-  - `02_data_cleaning_lf.ipynb` – Clean LF dataset  
+  - `02_data_cleaning_lf_work.ipynb` – Clean LF_work (employed)  
+  - `03_data_cleaning_lf_unemp.ipynb` – Clean LF_unemp (unemployment)  
+  - `04_data_cleaning_lf_total.ipynb` – Clean LF_total (labour force total)  
+  - `05_data_cleaning_lf_emp_rate.ipynb` – Clean LF_emp_rate (employment share)  
 - [data/](data/) – Datasets  
   - `raw/` – Original BPS files (ignored)  
-  - `clean/` – Cleaned outputs  
-    - `tp_cleaned.xlsx` – Population 15+  
-    - `lf_cleaned.xlsx` – Labour force  
-- [dashboard/](dashboard/) – Tableau (ignored until final)
-- [.gitignore](.gitignore) – Ignore raw + temp files
+  - `clean/` – Cleaned outputs (CSV, timestamped)  
+    - `bps_tp_detail_2010_2025_<timestamp>.csv`  
+    - `bps_tp_total_2010_2025_<timestamp>.csv`  
+    - `bps_lf_work_detail_2010_2025_<timestamp>.csv`  
+    - `bps_lf_work_total_2010_2025_<timestamp>.csv`  
+    - `bps_lf_unemp_detail_2010_2025_<timestamp>.csv`  
+    - `bps_lf_unemp_total_2010_2025_<timestamp>.csv`  
+    - `bps_lf_total_detail_2010_2025_<timestamp>.csv`  
+    - `bps_lf_total_total_2010_2025_<timestamp>.csv`  
+    - `bps_lf_emp_rate_detail_2010_2025_<timestamp>.csv`  
+    - `bps_lf_emp_rate_total_2010_2025_<timestamp>.csv`  
+- [dashboard/](dashboard/) – Tableau experiments (ignored until final)  
+- [.gitignore](.gitignore) – Ignore raw + temp files  
 
 
 --- 
@@ -52,19 +63,27 @@ root/
 ├── README.md
 ├── .gitignore
 ├── data/
-│   ├── raw/        (excluded)
+│   ├── raw/         (excluded)
 │   └── clean/
-│       ├── tp_cleaned.xlsx
-│       └── lf_cleaned.xlsx
+│       ├── bps_tp_detail_2010_2025_<timestamp>.csv
+│       ├── bps_tp_total_2010_2025_<timestamp>.csv
+│       ├── bps_lf_work_detail_2010_2025_<timestamp>.csv
+│       ├── bps_lf_work_total_2010_2025_<timestamp>.csv
+│       ├── bps_lf_unemp_detail_2010_2025_<timestamp>.csv
+│       ├── bps_lf_unemp_total_2010_2025_<timestamp>.csv
+│       ├── bps_lf_total_detail_2010_2025_<timestamp>.csv
+│       ├── bps_lf_total_total_2010_2025_<timestamp>.csv
+│       ├── bps_lf_emp_rate_detail_2010_2025_<timestamp>.csv
+│       └── bps_lf_emp_rate_total_2010_2025_<timestamp>.csv
 ├── notebooks/
 │   ├── 01_data_cleaning_tp.ipynb
-│   ├── 02_data_cleaning_lf.ipynb
-│   └── 03_metrics.ipynb   (planned)
+│   ├── 02_data_cleaning_lf_work.ipynb
+│   ├── 03_data_cleaning_lf_unemp.ipynb
+│   ├── 04_data_cleaning_lf_total.ipynb
+│   └── 05_data_cleaning_lf_emp_rate.ipynb
 └── dashboard/
     └── lfpr_unemployment_experiment.twb (ignored until final)
 ```
----
-
 
 ---
 
@@ -98,23 +117,20 @@ root/
 
 ## ✨ Outputs
 
-Two categories of cleaned datasets are produced:
+Cleaned datasets (2010–2025) are produced in two groups:
 
-- **Labour Force (lf)**  
-  - ✅ `bps_lf_detail_2010_2025_<timestamp>.csv`  
-    - Age group breakdowns (no “Total”)  
-    - Columns: `Age Group, February, August, Year`  
-  - ✅ `bps_lf_total_2010_2025_<timestamp>.csv`  
-    - Yearly totals only  
-    - Columns: `Year, February, August`  
+- **Labour Force (LF)**  
+  - `bps_lf_work_detail_<timestamp>.csv` / `bps_lf_work_total_<timestamp>.csv`  
+  - `bps_lf_unemp_detail_<timestamp>.csv` / `bps_lf_unemp_total_<timestamp>.csv`  
+  - `bps_lf_total_detail_<timestamp>.csv` / `bps_lf_total_total_<timestamp>.csv`  
+  - `bps_lf_emp_rate_detail_<timestamp>.csv` / `bps_lf_emp_rate_total_<timestamp>.csv`  
 
-- **Total Population (tp)**  
-  - ✅ `bps_tp_detail_2010_2025_<timestamp>.csv`  
-    - Age group breakdowns (no “Total”)  
-    - Columns: `Age Group, February, August, Year`  
-  - ✅ `bps_tp_total_2010_2025_<timestamp>.csv`  
-    - Yearly totals only  
-    - Columns: `Year, February, August`  
+- **Total Population (TP)**  
+  - `bps_tp_detail_<timestamp>.csv` / `bps_tp_total_<timestamp>.csv`  
+
+Each dataset contains either **detail** (age group breakdown, no “Total”) or **total** (yearly aggregates) with consistent columns:  
+- Detail → `Age Group, February, August, Year`  
+- Total → `Year, February, August`  
 
 ---
 
